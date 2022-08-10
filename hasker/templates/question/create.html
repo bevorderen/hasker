@@ -1,0 +1,51 @@
+{% extends 'base/base.html' %}
+{% block content %}
+    <div class="container">
+        <div id="signup-row" class="row justify-content-center align-items-center">
+            <div id="create-question" class="col-md-6">
+                <div id="login-box" class="col-md-12">
+                    <form id="question-form" class="form" action="{% url 'questions:ask' %}"
+                          method="post">
+                        {% csrf_token %}
+                        <h3 class="text-center text-info">Ask a question</h3>
+                        <div class="form-group">
+                            <label for="title" class="text-info">Title:</label><br>
+                            <input type="text" name="title" id="title" class="form-control">
+                            {% if form.title.errors %}
+                                <div class="text-danger">
+                                    {{ form.title.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="text" class="text-info">Text:</label><br>
+                            <textarea name="text" id="text" class="form-control"> </textarea>
+                            {% if form.text.errors %}
+                                <div class="text-danger">
+                                    {{ form.text.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="tags" class="text-info">Tags</label><br>
+                            <input type="tags" name="tags" id="tags" class="form-control">
+                            {% if form.tags.errors %}
+                                <div class="text-danger">
+                                    {{ form.tags.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" name="submit" class="btn btn-info btn-md" value="Ask!">
+                        </div>
+                    </form>
+                    {% if form.non_field_errors %}
+                        <div class="text-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

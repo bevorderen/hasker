@@ -1,0 +1,174 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+    {% load static %}
+    {% block scripts %}
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('.vote').on('click', function (event) {
+                    event.preventDefault()
+
+                    let vote_data = this.id.split("__");
+                    vote_data = {
+                        "vote_type": vote_data[0],
+                        "pk": vote_data[1],
+                        "action_type": vote_data[2],
+                        "csrfmiddlewaretoken": "{{ csrf_token }}"
+                    }
+
+                    $.ajax({
+                        url: "{% url 'questions:vote' %}",
+                        dataType: 'text',
+                        type: "post",
+                        data: vote_data,
+                        success: function (votes) {
+                            let div_id = "#" + vote_data["vote_type"] + "__" + vote_data["pk"]
+                            $(div_id).text(votes)
+                        }
+                    });
+                });
+
+                $(".mark").on('click', function (event) {
+                    event.preventDefault()
+                    const img_id = this.id
+                    const is_selected = $(this).attr("is_selected")
+
+                    let mark_data = this.id.split("__");
+                    mark_data = {
+                        "question_pk": mark_data[0],
+                        "answer_pk": mark_data[1],
+                        "current_state": is_selected === "1" ? "right" : "default",
+                        "csrfmiddlewaretoken": "{{ csrf_token }}"
+                    }
+
+                    $.ajax({
+                        url: "{% url 'questions:mark-right' %}",
+                        dataType: 'text',
+                        type: "post",
+                        data: mark_data,
+                        success: function (result) {
+                            if (is_selected == "1") {
+                                $("#" + img_id).attr("src", "{% static 'image/star_default.png' %}")
+                                $("#" + img_id).attr("is_selected", "0")
+                            } else {
+                                $("#" + img_id).attr("src", "{% static 'image/star_selected.png' %}")
+                                $("img[is_selected$='1']").attr("src", "{% static 'image/star_default.png' %}")
+                                $("img[is_selected$='1']").attr("is_selected", 0)
+                                $("#" + img_id).attr("is_selected", 1)
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+    {% endblock %}
+    <div class="container">
+        <div id="signup-row" class="row justify-content-center align-items-center">
+            <div id="question-detail" class="col-md-9">
+                <div id="question-box" class="col-md-12 mb-3">
+                    <div class="row">
+                        <div class="col-md-1">
+                            <img class="vote" alt="up" src="{% static 'image/up.png' %}"
+                                 id="q__{{ question.pk }}__like">
+                            <span style="margin-left: 5px" id="q__{{ question.pk }}">{{ question.votes }}</span>
+                            <img class="vote" alt="down" src="{% static 'image/down.png' %}"
+                                 id="q__{{ question.pk }}__dislike">
+                        </div>
+                        <div class="col-md-11">
+                            <h3>{{ question.title }}</h3>
+                            <div>
+                                {{ question.text }}
+                            </div>
+                            <div class="float-right">
+                                asked {{ question.created }}
+                                <div>
+                                    <img alt="avatar" src="{{ question.author.avatar.url }}" width="32" height="32">
+                                    <small>{{ question.author.username }}</small>
+                                </div>
+                            </div>
+                            <div id="tags" style="clear: both">
+                                {% for tag in question.tags.all %}
+                                    <div class="btn btn-primary">{{ tag.name }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 mb-5">
+                    <h3>Answers</h3>
+                    <div class="row" style="min-height: 300px">
+                        {% for answer in page_obj %}
+                            <div class="col-md-1">
+                                <img class="vote" alt="up" src="{% static 'image/up.png' %}"
+                                     id="a__{{ answer.pk }}__like">
+                                <span style="margin-left: 5px" id="a__{{ answer.pk }}">{{ answer.votes }}</span>
+                                <img class="vote" alt="down" src="{% static 'image/down.png' %}"
+                                     id="a__{{ answer.pk }}__dislike">
+
+                                {% if question.right_answer.pk == answer.pk and question.author.pk == user.pk %}
+                                    <img
+                                            alt="Right answer"
+                                            id="{{ question.pk }}__{{ answer.pk }}"
+                                            src="{% static 'image/star_selected.png' %}"
+                                            class="mark"
+                                            is_selected="1"
+                                    >
+                                {% elif question.author.pk == user.pk %}
+                                    <img
+                                            alt="Mark right"
+                                            id="{{ question.pk }}__{{ answer.pk }}"
+                                            src="{% static 'image/star_default.png' %}"
+                                            class="mark"
+                                            is_selected="0"
+                                    >
+                                {% elif  question.right_answer.pk == answer.pk %}
+                                    <img
+                                            alt="Right answer"
+                                            id="{{ question.pk }}__{{ answer.pk }}"
+                                            src="{% static 'image/star_selected.png' %}"
+                                    >
+                                {% endif %}
+                            </div>
+                            <div class="col-md-11">
+                                <div>{{ answer.text }}</div>
+                                <div class="float-right mb-2">
+                                    answered {{ answer.created }}
+                                    <div>
+                                        <img alt="avatar" src="{{ answer.author.avatar.url }}" width="32" height="32">
+                                        <small>{{ answer.author.username }}</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <hr style="clear: both">
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-12 mb-3">
+                    {% include "base/paginator.html" %}
+                </div>
+                <div class="row col-md-12" id="answer">
+                    <div class="col">
+                        <form method="post">
+                            <h3>Your answer</h3>
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <textarea name="text" id="text" class="form-control"> </textarea>
+                                {% if form.text.errors %}
+                                    <div class="text-danger">
+                                        {{ form.text.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" name="submit" class="btn btn-primary btn-md" value="Submit">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

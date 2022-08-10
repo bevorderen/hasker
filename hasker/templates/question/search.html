@@ -1,0 +1,69 @@
+{% extends 'base/base.html' %}
+{% load url_replace %}
+
+{% block content %}
+    <div class="container">
+        <div id="signup-row" class="row justify-content-center align-items-center">
+            <div id="question-detail" class="col-md-9">
+                <div id="question-box" class="col-md-12 mb-3">
+                    <div class="row nav nav-tabs">
+                        <h3>
+                            <div class="row mb-3">
+                                <a class="nav-link {% if not request.GET.order_by %}active{% endif %}"
+                                   href="?{% url_replace order_by="" %}">
+                                    New questions
+                                </a>
+                                <a class="nav-link {% if request.GET.order_by == "rank" %} active {% endif %}"
+                                   href="?{% url_replace order_by="rank" %}">
+                                    Hot questions</a>
+                            </div>
+                        </h3>
+                        <hr>
+                    </div>
+
+                    {% for question in page_obj %}
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div style="margin-bottom: 5px">
+                                    {{ question.votes }}
+                                </div>
+                                <div>Votes</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div>
+                                    {{ question.answers.count }}
+                                </div>
+                                <div>
+                                    Answers
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div>
+                                    <a href="{% url 'questions:detail' question.pk %}">{{ question.title }}</a>
+                                </div>
+                                <div>
+                                    {% for tag in question.tags.all %}
+                                        <div class="btn btn-primary mb-2">{{ tag.name }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div>
+                                    {{ question.author.username }}
+                                </div>
+                                <div>
+                                    asked {{ question.created|timesince }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="col-md-12 mb-3">
+                        {% include "base/paginator.html" %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

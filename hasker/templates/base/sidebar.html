@@ -1,0 +1,20 @@
+{% load sidebar  %}
+<div class="sidebar-right">
+    <div class="sidebar">
+        {% if user.is_authenticated %}
+            <div class="p-3">
+                <a class="btn btn-primary" href="{% url "questions:ask" %}" style="width: 120px; margin-left: -15px">Ask!</a>
+            </div>
+        {% endif %}
+        <h3>Trending</h3>
+        {% top_questions as top_q %}
+        <ol class="list-unstyled mb-0">
+            {% for q in top_q %}
+                <li>
+                    <span>{{ q.votes }}</span>
+                    <a href="{{ q.url }}">{{ q.title }}</a>
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
