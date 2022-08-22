@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.urls import reverse
 
@@ -12,13 +13,13 @@ class Tag(models.Model):
         return self.name
 
 
-class QABaseMixin(models.Model):
+class AbstractQA(models.Model):
     text = models.TextField(max_length=5000)
     created = models.DateTimeField("Дата публикации", auto_now_add=True)
     updated = models.DateTimeField("Дата изменения", auto_now=True)
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    likers = models.ManyToManyField(settings.AUTH_USER_MODEL)
-    dislikers = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    likers = models.ManyToManyField(get_user_model())
+    dislikers = models.ManyToManyField(get_user_model())
 
     class Meta:
         abstract = True
@@ -44,14 +45,14 @@ class QABaseMixin(models.Model):
                 self.dislikers.add(user)
 
 
-class Question(QABaseMixin):
+class Question(AbstractQA):
     class Meta:
         ordering = ['-created']
 
     title = models.TextField(max_length=255)
     tags = models.ManyToManyField(Tag, blank=True, related_name="questions")
-    likers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="q_users_like")
-    dislikers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="q_user_dislike")
+    likers = models.ManyToManyField(get_user_model(), related_name="q_users_like")
+    dislikers = models.ManyToManyField(get_user_model(), related_name="q_user_dislike")
     right_answer = models.OneToOneField(
         "Answer",
         blank=True,
@@ -68,7 +69,7 @@ class Question(QABaseMixin):
         return self.get_absolute_url()
 
 
-class Answer(QABaseMixin):
+class Answer(AbstractQA):
     question = models.ForeignKey(Question, related_name="answers", on_delete=models.CASCADE)
-    likers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="a_users_like")
-    dislikers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="a_user_dislike")
+    likers = models.ManyToManyField(get_user_model(), related_name="a_users_like")
+    dislikers = models.ManyToManyField(get_user_model(), related_name="a_user_dislike")

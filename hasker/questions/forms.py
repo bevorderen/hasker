@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from questions.models import Question, Tag, Answer
@@ -11,7 +12,7 @@ class TagsField(forms.Field):
         tags = []
         if value:
             values = [tag.lower() for tag in map(str.strip, value.split(",")) if tag]
-            if len(values) <= 3:
+            if len(values) <= settings.MAX_ALLOW_TAGS:
                 for tag_name in values:
                     tags.append((Tag.objects.get_or_create(name=tag_name)[0]))
                 return tags

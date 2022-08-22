@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
@@ -22,7 +23,6 @@ class User(AbstractUser):
         upload_to=upload_avatar_name,
         blank=True,
         null=True,
-        default="avatars/default/avatar.png",
     )
 
     def get_absolute_url(self) -> str:

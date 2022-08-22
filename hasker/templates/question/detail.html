@@ -24,6 +24,12 @@
                         success: function (votes) {
                             let div_id = "#" + vote_data["vote_type"] + "__" + vote_data["pk"]
                             $(div_id).text(votes)
+                            $("#error").css("display", "none")
+                            $("#error").text()
+                        },
+                        success: function (response) {
+                            $("#error").css("display", "block")
+                            $("#error").text(`Error occur when sending data to server ${response}`)
                         }
                     });
                 });
@@ -56,6 +62,12 @@
                                 $("img[is_selected$='1']").attr("is_selected", 0)
                                 $("#" + img_id).attr("is_selected", 1)
                             }
+                            $("#error").css("display", "none")
+                            $("#error").text()
+                        },
+                        error: function (response) {
+                            $("#error").attr("display", "block")
+                            $("#error").text(`Error occur when sending data to server ${response}`)
                         }
                     });
                 });
@@ -94,6 +106,8 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-12 mb-5" id="error" style="display: none; color: red">
+                </div>
                 <div class="col-md-12 mb-5">
                     <h3>Answers</h3>
                     <div class="row" style="min-height: 300px">
@@ -121,7 +135,7 @@
                                             class="mark"
                                             is_selected="0"
                                     >
-                                {% elif  question.right_answer.pk == answer.pk %}
+                                {% elif question.right_answer.pk == answer.pk %}
                                     <img
                                             alt="Right answer"
                                             id="{{ question.pk }}__{{ answer.pk }}"
@@ -146,7 +160,7 @@
                     </div>
                 </div>
                 <div class="col-md-12 mb-3">
-                    {% include "base/paginator.html" %}
+                    {% include "base/include/paginator.html" %}
                 </div>
                 <div class="row col-md-12" id="answer">
                     <div class="col">

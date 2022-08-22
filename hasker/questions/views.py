@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, F, Q
-from django.http import HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -152,10 +152,10 @@ class MarkRight(LoginRequiredMixin, View):
             answer = Answer.objects.get(pk=answer_pk)
             question = Question.objects.get(pk=question_pk)
         except ObjectDoesNotExist:
-            return HttpResponseBadRequest(f"{answer_pk=}|{question_pk=} object does not exist")
+            return Http404(f"{answer_pk=}|{question_pk=} object does not exist")
 
         if question.author.pk != request.user.pk:
-            return HttpResponseBadRequest(f"Don't have permission for this action")
+            return Http404(f"Don't have permission for this action")
 
         if request.POST.get("current_state") == "right" and question.right_answer and question.right_answer == answer:
             question.right_answer = None
